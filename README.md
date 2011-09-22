@@ -1,4 +1,4 @@
-# gamerscore.js - JavaScript API for Xbox 360 gamercard data
+# gamercard.js - JavaScript API for Xbox 360 gamercard data
 
 If you are an Xbox 360 gamer, you will be familiar with the
 gamercard system. Each gamer gets their own "gamertag" (username),
@@ -17,21 +17,21 @@ for every account, however, available through the following URL:
 
 where [Gamertag] is the username of the account you wish to display.
 
-gamerscore.js uses a server-side proxy (PHP implementation included) to
+gamercard.js uses a server-side proxy (PHP implementation included) to
 retrieve this HTML from the Xbox website. It then allows you to scrape
 the page, on either the client-side or server-side, and provides an
 asynchronous, easy-to-use API for using the data in your JavaScript code.
 
 ## Usage
 
-To use gamerscore.js, you will need a server-side proxy to get the card
+To use gamercard.js, you will need a server-side proxy to get the card
 HTML from the Xbox website. A PHP implementation is included - both a
 version that simply gets the HTML and a version that actually scrapes
 the page for data and returns a JSON representation of the gamercard. I
 hope to add further implementations (Python, Ruby, Node.js, Java, etc.)
 in the future.
 
-To include the gamerscore.js library in your HTML page, you can use:
+To include the gamercard.js library in your HTML page, you can use:
 
 	<script src="gamercard.js"></script>
 	
