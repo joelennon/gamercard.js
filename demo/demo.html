@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>gamercard.js demo</title>
+	</head>
+	<body>
+		<h1>gamercard.js demo</h1>
+		<form name="gamercard">
+			<label>Enter your gamertag:</label>
+			<input name="gamertag">
+			<input type="submit" value="Get Gamercard">
+		</form>
+		<hr>
+		<div id="card"></div>
+		<script src="json2.js"></script>
+		<script src="mustache.js"></script>
+		<script src="../gamercard.js"></script>
+		<!-- 
+		In this demo I am using Mustache.js templates to render the gamercard using JavaScript.
+		You could build up the view manually and insert it in JavaScript, but it's 2011 - and
+		JavaScript templates are awesome. You could also use handlebars.js, dust, ExtJS XTemplates
+		or a plethora of other solutions.
+		-->
+		<script type="text/mustache" id="tpl">
+			<img src="{{gamerpic}}"><br>
+			<strong>Gamertag:</strong> <a href="{{url}}">{{gamertag}}</a><br>
+			<strong>Membership Level:</strong> {{membership}}<br>
+			<strong>Sex:</strong> {{sex}}<br>
+			<strong>Reputation:</strong> {{reputation}}<br>
+			<strong>Gamerscore:</strong> {{gamerscore}}<br>
+			<strong>Location:</strong> {{location}}<br>
+			<strong>Motto:</strong> {{motto}}<br>
+			<strong>Name:</strong> {{name}}<br>
+			<strong>Bio:</strong> {{bio}}<br><br>
+			<strong>Recently Played:</strong>
+			<ul>
+				{{#games}}
+				<li>
+					<img src="{{image}}"><br>
+					<em><a href="{{link}}">{{title}}</a></em><br>
+					Last Played {{lastPlayed}}<br>
+					Gamerscore: {{currentGamerscore}} / {{totalGamerscore}} G<br>
+					Achievements: {{currentAchievements}} / {{totalAchievements}} ({{percentComplete}}% complete)<br>
+				</li>
+				{{/games}}
+			</ul>
+		</script>
+		<script>
+			var form = document.gamercard;
+			form.onsubmit = function(e) {
+				e.preventDefault();
+				var gamertag = form.gamertag.value;
+				
+				//gamercard.js scrapes Microsoft's official Xbox Live gamercard
+				//You can use either server-side scraping or client-side scraping
+				//To use client-side scraping, set scrape = true
+				//To use client-side scraping, set scrape = false (default)
+				var scrape = false;
+				
+				//When client-side scraping, an iframe will always be used
+				//and the iframe argument will be ignored.
+				//When server-side scraping, you can choose to load using Ajax
+				//or using an iframe (using iframe is a bit slower).
+				//To sue iframe loading, set iframe = true
+				//To use Ajax loading, set iframe = false (default)
+				var iframe = false;
+				
+				//Because of cross-domain policy restrictions in JavaScript, we
+				//need to use a server-side proxy to get the data from Microsoft
+				//(unfortunately there is no JSONP implementation of the gamercard)
+				//A PHP implementation is included with the library. For server-side
+				//scraping, the server-side proxy should scrape the page and provide
+				//a JSON response. For client-side scraping, the server-side proxy
+				//should respond with the actual gamercard HTML. Feel free to write
+				//your own server-side proxy if you wish, the library is server-side
+				//language agnostic. You can use the following properties to define
+				//the URLs for your proxy/proxies.
+				Gamercard.jsonUrl = '../php/json.php';
+				Gamercard.htmlUrl = '../php/html.php';
+				
+				//The Gamercard.fetch method is asynchronous, and accepts a callback
+				//function that will be executed when the gamercard has been retrieved
+				//and parsed by the library. The callback function will be passed
+				//a single argument. If you are using server-side scraping, this will
+				//be a string of JSON text - you should parse this using a JSON parser.
+				//If you are using client-side scraping, the argument will be a
+				//JavaScript object with the gamercard data.
+				Gamercard.fetch(gamertag, function(result) {
+					var gamercard;
+					if(scrape) gamercard = result;
+					else gamercard = JSON.parse(result);
+					
+					//The last played date of games is in UNIX timestamp (JSON doesn't
+					//support the JavaScript Date object) - I'm converting it to a Date
+					//object here 
+					for(var i=0,len=gamercard.games.length;i<len;i++) {
+						var unixTimestamp = gamercard.games[i].lastPlayed;
+						gamercard.games[i].lastPlayed = new Date();
+						gamercard.games[i].lastPlayed.setTime(unixTimestamp * 1000);
+					}
+					//Here I'm using the Mustache.js template library to render
+					//the gamercard object to HTML
+					var tpl = document.getElementById("tpl").innerHTML;
+					document.getElementById("card").innerHTML = Mustache.to_html(tpl, gamercard);
+				}, scrape, iframe);
+			}
+		</script>
+	</body>
+</html>
